@@ -14,7 +14,7 @@ exports.handler = function(context, event, callback) {
     twilioAccountSid,
     twilioApiKey,
     twilioApiSecret,
-    {identity: identity}
+    identity
   );
 
   const headers = {

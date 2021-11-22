@@ -33,16 +33,7 @@ export default {
       fetch(`https://walkie-talkie-service-3809-dev.twil.io/token?identity=${this.identity}`)
       .then(response => response.json())
       .then(data => {
-        console.log(data)
-        this.device.setup(data.accessToken, {debug: true});
-        console.log(event)
-        //console.log(this.device)
-        // this.device = device;
-        // console.log(this.device)
-        console.log(this.device.status())
-       
-        
-        //this.device.setup(data.accessToken);
+        this.device.setup(data.accessToken, {debug: false});
         this.device.audio.incoming(false);
         this.device.audio.outgoing(false);
         this.device.audio.disconnect(false);
@@ -51,8 +42,7 @@ export default {
     }
   },
   mounted(){
-    const device = new Device();
-    this.device = device; 
+    this.device = new Device();
 
     this.device.on('incoming', connection => {
       // immediately accepts incoming connection
@@ -76,11 +66,6 @@ export default {
       console.log('disconnect')
       this.status = connection.status();
     });
-
-    this.device.on('offline', connection => {
-      console.log("blah")
-      this.status = connection.status();
-    })
   },
   components: {}
 }
