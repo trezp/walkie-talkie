@@ -3,12 +3,13 @@
     <button v-if="status === ready">Press To Talk</button>
     <div v-else>
       <p>Enter your name to begin.</p>
-      <form>
-        <input type="text" placeholder="What's your name?">
+      <form v-on:submit="setUp">
+        <input type="text" v-model="identity" placeholder="What's your name?">
         <input type="submit" value="Begin Session">
       </form>
     </div>
     <p>{{ status }}</p>
+    <p>Identity: {{ identity }} </p>
   </div>
 </template>
 
@@ -21,36 +22,65 @@ export default {
     return {
       identity: '',
       status: 'There is no status',
-      ready: false
+      ready: false,
+      device: null
     }
   },
   methods: {
     setUp(event){
       event.preventDefault();
+  
+      fetch(`https://walkie-talkie-service-3809-dev.twil.io/token?identity=${this.identity}`)
+      .then(response => response.json())
+      .then(data => {
+        console.log(data)
+        this.device.setup(data.accessToken, {debug: true});
+        console.log(event)
+        //console.log(this.device)
+        // this.device = device;
+        // console.log(this.device)
+        console.log(this.device.status())
+       
+        
+        //this.device.setup(data.accessToken);
+        this.device.audio.incoming(false);
+        this.device.audio.outgoing(false);
+        this.device.audio.disconnect(false);
+    })
+    .catch(err => console.log(err))
     }
   },
   mounted(){
     const device = new Device();
-    console.log(device)
+    this.device = device; 
 
-    device.on('incoming', connection => {
+    this.device.on('incoming', connection => {
       // immediately accepts incoming connection
+      console.log('incoming')
       connection.accept();
       this.status = connection.status();
     });
 
-    device.on('ready', () => {
+    this.device.on('ready', () => {
+      console.log('ready')
       this.status = "device ready"; 
       this.ready = true; 
     });
 
-    device.on('connect', connection => {
+    this.device.on('connect', connection => {
+      console.log('connect')
       this.status = connection.status();
     });
 
-    device.on('disconnect', connection => {
+    this.device.on('disconnect', connection => {
+      console.log('disconnect')
       this.status = connection.status();
     });
+
+    this.device.on('offline', connection => {
+      console.log("blah")
+      this.status = connection.status();
+    })
   },
   components: {}
 }
