@@ -14,7 +14,7 @@ exports.handler = function(context, event, callback) {
     twilioAccountSid,
     twilioApiKey,
     twilioApiSecret,
-    identity
+    {identity: identity}
   );
 
   const headers = {
@@ -34,8 +34,7 @@ exports.handler = function(context, event, callback) {
   response.setHeaders(headers);
 
   response.setBody({
-    accessToken: token.toJwt(),
-    identity 
+    accessToken: token.toJwt() 
   });
 
   return callback(null, response);

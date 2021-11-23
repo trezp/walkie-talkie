@@ -1,14 +1,14 @@
 <template>
   <div>
-    <button v-if="ready"
-      v-on:mousedown="connect"
-      v-on:mouseup="disconnect">
+    <button type="button" v-if="ready"
+      @mousedown="connect"
+      @abort="disconnect">
       Press To Talk
     </button>
     <div v-else>
-      <form v-on:submit="setUp">
+      <form @submit="setUp">
         <p><label for="chooseHandle">Choose a Handle To Begin</label></p>
-        <select name="selectedIdentity" id="chooseHandle" v-model="identity">
+        <select name="identity" id="chooseHandle" v-model="identity">
           <option disabled>Choose a Handle</option>
           <option value="friend1">friend1</option>
           <option value="friend2">friend2</option>
@@ -37,11 +37,11 @@ export default {
   methods: {
     setUp(event){
       event.preventDefault();
-  
+
       fetch(`https://walkie-talkie-service-3809-dev.twil.io/token?identity=${this.identity}`)
       .then(response => response.json())
       .then(data => {
-        this.device.setup(data.accessToken, {debug: false});
+        this.device.setup(data.accessToken, {debug: true});
         this.device.audio.incoming(false);
         this.device.audio.outgoing(false);
         this.device.audio.disconnect(false);
@@ -49,11 +49,16 @@ export default {
     .catch(err => console.log(err))
     },
     connect(){
-      console.log('connect')
-      const recipient = this.identity === 'friend1' ? 'friend2' : 'friend1';
-      this.device.connect({recipient: recipient});
+      console.log(this.device)
+      try {
+        this.identity === 'friend1' ? 'friend2' : 'friend1';
+        this.device.connect({recipient: this.identity});
+      } catch(err){
+        console.log(err)
+      }
     },
     disconnect(){
+      console.log('disconnect')
       this.device.disconnectAll();
     }
   },
