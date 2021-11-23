@@ -1,12 +1,12 @@
 <template>
   <div>
-    <button type="button" v-if="ready"
-      @mousedown="connect"
-      @abort="disconnect">
-      Press To Talk
+    <button type="button" v-if="ready" 
+      @mousedown="startTalking"
+      @mouseup="disconnect">
+      Hold to Talk
     </button>
     <div v-else>
-      <form @submit="setUp">
+      <form @submit="handleSubmit">
         <p><label for="chooseHandle">Choose a Handle To Begin</label></p>
         <select name="identity" id="chooseHandle" v-model="identity">
           <option disabled>Choose a Handle</option>
@@ -24,6 +24,8 @@
 <script>
 import { Device } from 'twilio-client';
 
+const device = new Device();
+
 export default {
   name: 'App',
   data(){
@@ -31,64 +33,53 @@ export default {
       identity: '',
       status: '',
       ready: false,
-      device: null
+      device: null,
     }
   },
   methods: {
-    setUp(event){
+    handleSubmit(event){
       event.preventDefault();
 
       fetch(`https://walkie-talkie-service-3809-dev.twil.io/token?identity=${this.identity}`)
       .then(response => response.json())
       .then(data => {
-        this.device.setup(data.accessToken, {debug: true});
-        this.device.audio.incoming(false);
-        this.device.audio.outgoing(false);
-        this.device.audio.disconnect(false);
+        device.setup(data.accessToken, {debug: true});
+        device.audio.incoming(false);
+        device.audio.outgoing(false);
+        device.audio.disconnect(false);
     })
     .catch(err => console.log(err))
     },
-    connect(){
-      console.log(this.device)
-      try {
-        this.identity === 'friend1' ? 'friend2' : 'friend1';
-        this.device.connect({recipient: this.identity});
-      } catch(err){
-        console.log(err)
-      }
+    startTalking(){
+      this.identity === 'friend1' ? 'friend2' : 'friend1';
+      device.connect({recipient: this.identity});
     },
     disconnect(){
-      console.log('disconnect')
-      this.device.disconnectAll();
+      device.disconnectAll();
     }
   },
   mounted(){
-    this.device = new Device();
-
-    this.device.on('incoming', connection => {
+    device.on('incoming', connection => {
       // immediately accepts incoming connection
-      console.log('incoming')
       connection.accept();
       this.status = connection.status();
     });
 
-    this.device.on('ready', () => {
+    device.on('ready', () => {
       console.log('ready')
       this.status = "device ready"; 
       this.ready = true; 
     });
 
-    this.device.on('connect', connection => {
+    device.on('connect', connection => {
       console.log('connect')
       this.status = connection.status();
     });
 
-    this.device.on('disconnect', connection => {
-      console.log('disconnect')
+    device.on('disconnect', connection => {
       this.status = connection.status();
     });
-  },
-  components: {}
+  }
 }
 </script>
 
